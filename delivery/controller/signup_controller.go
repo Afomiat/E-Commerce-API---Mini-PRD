@@ -21,40 +21,33 @@ func NewSignupController(SignupUsecase domain.SignupUsecase, env *config.Env ) *
 	}
 }
 
-func(sc *SignupController) Signup(ctx *gin.Context){
-	var user domain.SignupForm
+func (sc *SignupController) Signup(ctx *gin.Context) {
+    var user domain.SignupForm
 
-	if err := ctx.ShouldBindJSON(&user); err != nil{
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
+    if err := ctx.ShouldBindJSON(&user); err != nil {
+        ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
 
-	// if err := sc.SignupUsecase.Signup(ctx, &user); err != nil{
-	// 	ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-	// 	return
-	// }
+    // Check if the username or email already exists
+    returnUser, _ := sc.SignupUsecase.GetUserByUserName(ctx, user.Username)
+    if returnUser != nil {
+        ctx.JSON(http.StatusBadRequest, gin.H{"error": "Username Already Exists!"})
+        return
+    }
 
-	returnUser, _ := sc.SignupUsecase.GetUserByUserName(ctx, user.Username)
+    returnUser, _ = sc.SignupUsecase.GetUserByEmail(ctx, user.Email)
+    if returnUser != nil {
+        ctx.JSON(http.StatusBadRequest, gin.H{"error": "Email Already Exists!"})
+        return
+    }
 
-	if returnUser != nil{
-		ctx.JSON(http.StatusBadRequest, gin.H{"error":"Username Already Exists!"})
-		return
-	}
+    // Send OTP
+    err := sc.SignupUsecase.SendOtp(ctx, &user, sc.env.SMTPUsername, sc.env.SMTPPassword)
+    if err != nil {
+        ctx.JSON(http.StatusBadRequest, gin.H{"error": "OTP sending failed"})
+        return
+    }
 
-	returnUser, _ = sc.SignupUsecase.GetUserByEmail(ctx, user.Email)
-
-	if returnUser != nil{
-		ctx.JSON(http.StatusBadRequest, gin.H{"error":"Email Already Exists!"})
-		return
-	}
-
-	err := sc.SignupUsecase.SendOtp(ctx, &user, sc.env.SMTPPassword, sc.env.SMTPUsername)
-
-	if err != nil{
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "OTP sending failed"})
-		return
-	}
-	ctx.JSON(http.StatusOK, gin.H{"message": "OTP Sent"})
-
-	
+    ctx.JSON(http.StatusOK, gin.H{"message": "OTP Sent"})
 }

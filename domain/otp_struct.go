@@ -3,7 +3,7 @@ package domain
 import "time"
 
 const (
-	OtpCollection = "otp"
+	OtpCollection = "otp_new"
 )
 
 type OTP struct {

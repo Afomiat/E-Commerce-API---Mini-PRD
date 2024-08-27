@@ -1,35 +1,41 @@
 package config
 
 import (
-	"log"
-
-	"github.com/spf13/viper"
+    "log"
+    "github.com/joho/godotenv"
+    "github.com/spf13/viper"
 )
 
 type Env struct {
-	LocalServerPort string `mapstructure:"LOCAL_SERVER_PORT"`
-	MongoDBURL      string `mapstructure:"MONGODB_URL"`
-	JWTSecret       string `mapstructure:"JWT_SECRET"`
-	DBName          string `mapstructure:"DB_NAME"`
-	ContextTimeout  int    `mapstructure:"CONTEXT_TIMEOUT"` // Changed to int for easier time.Duration usage
-	SMTPUsername    string `mapstructure:"SMTP_USERNAME"`
-	SMTPPassword    string `mapstructure:"SMTP_PASSWORD"`
-	SMTPHost        string `mapstructure:"SMTP_HOST"`
-	SMTPPort        string `mapstructure:"SMTP_PORT"`
+    LocalServerPort   string `mapstructure:"LOCAL_SERVER_PORT"`
+    MongoDBURL        string `mapstructure:"MONGODB_URL"`
+    JWTSecret         string `mapstructure:"JWT_SECRET"`
+    DBName            string `mapstructure:"DB_NAME"`
+    ContextTimeout    int    `mapstructure:"CONTEXT_TIMEOUT"`
+    SMTPUsername      string `mapstructure:"SMTPUsername"`
+    SMTPPassword      string `mapstructure:"SMTPPassword"`
+    SMTPHost          string `mapstructure:"SMTPHost"`
+    SMTPPort          string `mapstructure:"SMTPPort"`
 }
 
-func LoadEnv() *Env {
-	viper.SetConfigFile(".env")
+func NewEnv() *Env {
+    // Load the .env file using godotenv
+    if err := godotenv.Load(); err != nil {
+        log.Fatalf("Error loading .env file: %v", err)
+    }
 
-	if err := viper.ReadInConfig(); err != nil {
-		log.Fatalf("Error reading .env file: %s", err)
-	}
+    var env Env
+    viper.SetConfigFile(".env")
 
-	var env Env
+    err := viper.ReadInConfig()
+    if err != nil {
+        log.Fatalf("Can't find the file .env: %v", err)
+    }
 
-	if err := viper.Unmarshal(&env); err != nil {
-		log.Fatalf("Error unmarshalling .env file: %s", err)
-	}
+    err = viper.Unmarshal(&env)
+    if err != nil {
+        log.Fatalf("Environment can't be loaded: %v", err)
+    }
 
-	return &env
+    return &env
 }
