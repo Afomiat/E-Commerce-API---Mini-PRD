@@ -10,7 +10,7 @@ import (
 
 func main() {
     // Load environment variables
-    env := config.LoadEnv()
+    env := config.NewEnv()
 
     // Connect to MongoDB
     dbClient := config.ConnectMongoDB(env) // Assuming ConnectMongoDB is in the config package
