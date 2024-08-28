@@ -14,3 +14,8 @@ type OTP struct {
 	CreatedAt time.Time `bson:"created_at"`
 	ExpiresAt time.Time `bson:"expires_at"`
 }
+
+type VerifyOtp struct {
+	Value string `bson:"value"`
+	Email string `bson:"email"`
+}

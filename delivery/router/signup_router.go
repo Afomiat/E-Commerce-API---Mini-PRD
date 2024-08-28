@@ -22,6 +22,7 @@ func NewSignUpRouter(env *config.Env, timeout time.Duration, db *mongo.Database,
 	signController := controller.NewSignupController(signUsecase, env)
 
 	Group.POST("/signup", signController.Signup)
+	Group.POST("/verify", signController.Verify)
 
 	
 }

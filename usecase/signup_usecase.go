@@ -60,7 +60,7 @@ func (su *SignupUsecase) GetUserByEmail(ctx context.Context, Email string) (*dom
 
 func (su *SignupUsecase) SendOtp(c context.Context, user *domain.SignupForm, smtpusername, smtppassword string) error {
     // Retrieve existing OTP if any
-    storedOTP, err := su.otpRepo.GetOtpByEmail(c, user.Email)
+    storedOTP, err := su.GetOtpByEmail(c, user.Email)
     if err != nil && err != mongo.ErrNoDocuments {
         return err
     }
@@ -127,3 +127,28 @@ func (su *SignupUsecase) SaveOTP(ctx context.Context, otp *domain.OTP) error {
 	return su.otpRepo.SaveOTP(ctx, otp)
 }
 
+func (su *SignupUsecase) VerifyOtp(ctx context.Context, otp *domain.VerifyOtp)(*domain.OTP, error){
+    ctx, cancel := context.WithTimeout(ctx, su.contextTimeout)
+	defer cancel()
+
+    storedOTP, err := su.GetOtpByEmail(ctx, otp.Email)
+
+    if err != nil{
+        return nil, errors.New("OTP not found Please signup again")
+    }
+
+    if storedOTP.Value != otp.Value{
+        return nil, errors.New("invslid OTP")
+    }
+
+    if time.Now().After(storedOTP.ExpiresAt) {
+		return nil, errors.New("OTP expired")
+	}
+
+    err = su.otpRepo.DeleteOTP(ctx, storedOTP.Email)
+    if err != nil{
+        return nil, err
+    }
+
+    return storedOTP, nil
+}

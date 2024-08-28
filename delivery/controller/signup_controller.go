@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/Afomiat/E-Commerce-API---Mini-PRD/config"
@@ -50,4 +51,31 @@ func (sc *SignupController) Signup(ctx *gin.Context) {
     }
 
     ctx.JSON(http.StatusOK, gin.H{"message": "OTP Sent"})
+}
+
+func (sc *SignupController) Verify(ctx *gin.Context){
+    var otp domain.VerifyOtp
+
+    err := ctx.ShouldBindJSON(&otp)
+    if err != nil{
+        ctx.JSON(http.StatusBadRequest, gin.H{"error":err.Error()})
+    }
+
+    OtpResponse, err := sc.SignupUsecase.VerifyOtp(ctx, &otp)
+    if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	user := domain.SignupForm{
+		Username: OtpResponse.Username,
+		Email:    OtpResponse.Email,
+		Password: OtpResponse.Password,
+		Role:     "user",
+	}
+	sc.Register(ctx, user)
+
+}
+
+func (sc *SignupController) Register(ctx context.Context, user domain.SignupForm){
+    
 }

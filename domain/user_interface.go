@@ -4,6 +4,7 @@ import "context"
 
 type SignupUsecase interface {
 	// Signup(ctx context.Context, user *SignupForm) error
+	VerifyOtp(ctx context.Context, otp *VerifyOtp)(*OTP, error)
 	GetUserByUserName(ctx context.Context, username string) (*SignupForm, error)
 	GetUserByEmail(ctx context.Context, Email string) (*SignupForm, error)
 	SendOtp(cxt context.Context, user *SignupForm,  stmpName, stmpPass string) error

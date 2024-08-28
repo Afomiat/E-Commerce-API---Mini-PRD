@@ -1,9 +1,12 @@
 package userutil
 
 import (
+	"fmt"
 	"regexp"
+	"time"
 
-	"github.com/xlzd/gotp"
+	
+	"golang.org/x/exp/rand"
 )
 
 func ValidateEmail(email string) bool {
@@ -20,6 +23,7 @@ func ValidatePassword(password string) bool {
 }
 
 func GenerateOTP() string {
-	secretLength := 8
-	return gotp.RandomSecret(secretLength)
+    rand.Seed(uint64(time.Now().UnixNano())) // Seed the random number generator with int64
+    otp := rand.Intn(900000) + 100000 // Generate a random number between 100000 and 999999
+    return fmt.Sprintf("%06d", otp)   // Format the number as a 6-digit string
 }
