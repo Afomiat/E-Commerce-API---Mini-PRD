@@ -10,6 +10,7 @@ import (
 	"github.com/Afomiat/E-Commerce-API---Mini-PRD/config"
 	"github.com/Afomiat/E-Commerce-API---Mini-PRD/domain"
 	"github.com/Afomiat/E-Commerce-API---Mini-PRD/internal/userutil"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -151,4 +152,25 @@ func (su *SignupUsecase) VerifyOtp(ctx context.Context, otp *domain.VerifyOtp)(*
     }
 
     return storedOTP, nil
+}
+func (su *SignupUsecase) RegisterUser(ctx context.Context, user *domain.SignupForm)(*primitive.ObjectID, error){
+    ctx, cancel := context.WithTimeout(ctx, su.contextTimeout)
+    defer cancel()
+
+    hashedPass, err := userutil.HassPassword(user.Password)
+
+    if err != nil{
+        return nil, err
+    }
+
+    addUser := domain.SignupForm{
+        ID: primitive.NewObjectID(),
+        Username: user.Username,
+        Password: hashedPass,
+        Email: user.Email,
+        Role: "user",
+    }
+    err = su.signupRepo.CreateUser(ctx, &addUser)
+    
+    return &addUser.ID, err
 }

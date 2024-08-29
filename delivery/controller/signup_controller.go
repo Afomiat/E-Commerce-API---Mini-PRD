@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"context"
+	
 	"net/http"
 
 	"github.com/Afomiat/E-Commerce-API---Mini-PRD/config"
@@ -15,11 +15,12 @@ type SignupController struct {
 
 }
 
-func NewSignupController(SignupUsecase domain.SignupUsecase, env *config.Env ) *SignupController{
-	return &SignupController{
-		SignupUsecase: SignupUsecase,
-		env:           env,
-	}
+
+func NewSignupController(signupUsecase domain.SignupUsecase, env *config.Env) *SignupController {
+    return &SignupController{
+        SignupUsecase: signupUsecase,
+        env:           env,
+    }
 }
 
 func (sc *SignupController) Signup(ctx *gin.Context) {
@@ -76,6 +77,14 @@ func (sc *SignupController) Verify(ctx *gin.Context){
 
 }
 
-func (sc *SignupController) Register(ctx context.Context, user domain.SignupForm){
-    
+func (sc *SignupController) Register(ctx *gin.Context, user domain.SignupForm) {
+    userId, err := sc.SignupUsecase.RegisterUser(ctx, &user)
+
+    if err != nil {
+        ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+
+    // Return a successful response, e.g., with the newly created user ID
+    ctx.JSON(http.StatusOK, gin.H{"user_id": userId.Hex()})
 }

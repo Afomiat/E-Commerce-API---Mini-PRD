@@ -49,3 +49,9 @@ func (sr *SignupReo) GetUserByEmail(ctx context.Context, Email string)(*domain.S
 	}
 	return &user, nil
 }
+
+func (sr *SignupReo) CreateUser(ctx context.Context, user *domain.SignupForm) error{
+	_, err := sr.collection.InsertOne(ctx, user)
+
+	return err
+}
